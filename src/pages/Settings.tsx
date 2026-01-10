@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchTidalUserId } from '../services/tidal';
+import { getSettings, saveSettings } from '../services/settings';
 import { Loader } from 'lucide-react';
 
 const Settings: React.FC = () => {
@@ -8,6 +9,14 @@ const Settings: React.FC = () => {
     const [tidalToken, setTidalToken] = useState('');
     const [tidalUserId, setTidalUserId] = useState('');
     const [checkingTidal, setCheckingTidal] = useState(false);
+
+    useEffect(() => {
+        const current = getSettings();
+        setUsername(current.lastfmUsername);
+        setApiKey(current.lastfmApiKey);
+        setTidalToken(current.tidalToken || '');
+        setTidalUserId(current.tidalUserId || '');
+    }, []);
 
     const checkTidalId = async () => {
         if (!tidalToken) {
@@ -32,13 +41,12 @@ const Settings: React.FC = () => {
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: Save to local storage or context
-        localStorage.setItem('music-digger-settings', JSON.stringify({
+        saveSettings({
             lastfmUsername: username,
             lastfmApiKey: apiKey,
             tidalToken,
             tidalUserId
-        }));
+        });
         alert('Settings saved!');
     };
 
