@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getCachedAnalysis, analyzeMusicTaste, saveAnalysis } from '../services/analyzer';
 import { fetchArtistInfo } from '../services/lastfm';
-import type { Artist, UserSettings, TimePeriod } from '../types';
+import { getSettings } from '../services/settings';
+import type { Artist, TimePeriod } from '../types';
 import { Loader, Info, Disc } from 'lucide-react';
 
 const ArtistAnalyzer: React.FC = () => {
@@ -23,10 +24,8 @@ const ArtistAnalyzer: React.FC = () => {
         setAnalyzing(true);
         setError(null);
         try {
-            const settingsStr = localStorage.getItem('music-digger-settings');
-            if (!settingsStr) throw new Error("Please configure settings first completely.");
+            const settings = getSettings();
 
-            const settings: UserSettings = JSON.parse(settingsStr);
             if (!settings.lastfmApiKey || !settings.lastfmUsername) {
                 throw new Error("Please configure Last.fm API Key and Username in Settings.");
             }
@@ -48,19 +47,16 @@ const ArtistAnalyzer: React.FC = () => {
     const handleArtistClick = async (artist: Artist) => {
         setSelectedArtist(artist); // Show basic info first
         // Fetch full info
-        const settingsStr = localStorage.getItem('music-digger-settings');
-        if (settingsStr) {
-            const settings: UserSettings = JSON.parse(settingsStr);
-            if (settings.lastfmApiKey) {
-                setLoading(true);
-                try {
-                    const fullInfo = await fetchArtistInfo(artist.name, settings.lastfmApiKey);
-                    if (fullInfo) setSelectedArtist(fullInfo);
-                } catch (e) {
-                    console.error("Failed to fetch details", e);
-                } finally {
-                    setLoading(false);
-                }
+        const settings = getSettings();
+        if (settings.lastfmApiKey) {
+            setLoading(true);
+            try {
+                const fullInfo = await fetchArtistInfo(artist.name, settings.lastfmApiKey);
+                if (fullInfo) setSelectedArtist(fullInfo);
+            } catch (e) {
+                console.error("Failed to fetch details", e);
+            } finally {
+                setLoading(false);
             }
         }
     };

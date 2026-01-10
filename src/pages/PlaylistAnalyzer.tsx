@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { analyzePlaylists } from '../services/playlistAnalyzer';
-import type { UserSettings } from '../types';
+import { getSettings } from '../services/settings';
 import { Loader, Disc, Music } from 'lucide-react';
 
 interface PlaylistArtist {
@@ -18,10 +18,8 @@ const PlaylistAnalyzer: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            const settingsStr = localStorage.getItem('music-digger-settings');
-            if (!settingsStr) throw new Error("Please configure settings first.");
+            const settings = getSettings();
 
-            const settings: UserSettings = JSON.parse(settingsStr);
             if (!settings.tidalToken || !settings.tidalUserId) {
                 throw new Error("Please configure Tidal Token and User ID in Settings.");
             }
