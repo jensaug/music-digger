@@ -25,6 +25,8 @@ async function generateCodeChallenge(verifier: string): Promise<string> {
 }
 
 export const getAuthorizationUrl = async (clientId: string, redirectUri: string): Promise<string> => {
+    console.log('[Tidal OAuth] Generating authorization URL', { clientId, redirectUri });
+    
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     
@@ -39,7 +41,10 @@ export const getAuthorizationUrl = async (clientId: string, redirectUri: string)
         code_challenge: codeChallenge,
         lang: 'en'
     });
-    return `${TOKEN_URL}?${params.toString()}`;
+    
+    const url = `${TOKEN_URL}?${params.toString()}`;
+    console.log('[Tidal OAuth] Authorization URL generated:', url);
+    return url;
 };
 
 export const exchangeCodeForTokens = async (
@@ -48,8 +53,11 @@ export const exchangeCodeForTokens = async (
     clientSecret: string,
     redirectUri: string
 ): Promise<TidalOAuthSettings> => {
+    console.log('[Tidal OAuth] Exchanging code for tokens', { code: code.substring(0, 10) + '...', clientId, redirectUri });
+    
     const codeVerifier = sessionStorage.getItem(CODE_VERIFIER_KEY);
     if (!codeVerifier) {
+        console.error('[Tidal OAuth] No code verifier found in sessionStorage');
         throw new Error('No code verifier found. Please start the authorization flow again.');
     }
     
@@ -61,6 +69,8 @@ export const exchangeCodeForTokens = async (
         code_verifier: codeVerifier,
     });
 
+    console.log('[Tidal OAuth] Sending token request to auth.tidal.com');
+
     const response = await fetch('https://auth.tidal.com/v1/oauth2/token', {
         method: 'POST',
         headers: {
@@ -69,8 +79,11 @@ export const exchangeCodeForTokens = async (
         body: body.toString()
     });
 
+    console.log('[Tidal OAuth] Token response status:', response.status);
+
     if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[Tidal OAuth] Token exchange failed:', error);
         throw new Error(`Token exchange failed: ${error.error || error.error_description || response.statusText}`);
     }
 
@@ -78,6 +91,8 @@ export const exchangeCodeForTokens = async (
     const expiresAt = Date.now() + (data.expires_in * 1000);
 
     sessionStorage.removeItem(CODE_VERIFIER_KEY);
+
+    console.log('[Tidal OAuth] Successfully exchanged code for tokens');
 
     return {
         clientId,

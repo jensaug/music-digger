@@ -35,8 +35,14 @@ const Settings: React.FC = () => {
             return;
         }
         const redirectUri = window.location.origin + window.location.pathname;
-        const url = await getAuthorizationUrl(clientId, redirectUri);
-        window.open(url, '_blank');
+        try {
+            const url = await getAuthorizationUrl(clientId, redirectUri);
+            console.log('[Settings] Opening Tidal authorization:', url);
+            window.open(url, '_blank');
+        } catch (err) {
+            console.error('[Settings] Failed to generate authorization URL:', err);
+            alert(`Failed to generate authorization URL: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        }
     };
 
     const handleExchangeCode = async () => {
@@ -51,11 +57,16 @@ const Settings: React.FC = () => {
 
         setExchanging(true);
         try {
+            console.log('[Settings] Starting code exchange', { authCode: authCode.substring(0, 10) + '...', clientId });
             const redirectUri = window.location.origin + window.location.pathname;
             const oauthSettings = await exchangeCodeForTokens(authCode.trim(), clientId, clientSecret, redirectUri);
+            console.log('[Settings] Token exchange successful');
+            
+            console.log('[Settings] Fetching user ID');
             const userId = await fetchUserId(oauthSettings.accessToken!);
             if (userId) {
                 oauthSettings.userId = userId;
+                console.log('[Settings] User ID fetched:', userId);
             }
 
             const current = getSettings();
@@ -67,8 +78,10 @@ const Settings: React.FC = () => {
             setConnected(true);
             setTokenStatus('valid');
             setAuthCode('');
+            console.log('[Settings] Connected to Tidal successfully');
             alert('Successfully connected to Tidal!');
         } catch (err: unknown) {
+            console.error('[Settings] Code exchange failed:', err);
             if (err instanceof Error) {
                 alert(`Failed to exchange code: ${err.message}`);
             } else {
@@ -123,6 +136,7 @@ const Settings: React.FC = () => {
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
         if (code) {
+            console.log('[Settings] Authorization code found in URL:', code.substring(0, 10) + '...');
             setAuthCode(code);
             window.history.replaceState({}, '', window.location.pathname);
         }
