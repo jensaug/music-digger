@@ -19,12 +19,11 @@ export const analyzePlaylists = async (settings: UserSettings): Promise<Playlist
     }
 
     const playlists = await fetchUserPlaylists(validSettings.tidalOAuth);
+    console.log('[PlaylistAnalyzer] Analyzing', playlists.length, 'playlists');
 
     const artistMap = new Map<string, PlaylistArtist>();
 
-    const playlistsToAnalyze = playlists.slice(0, 20);
-
-    const promises = playlistsToAnalyze.map(async (playlist: any) => {
+    const promises = playlists.map(async (playlist: any) => {
         const items = await fetchPlaylistTracks(playlist.uuid, validSettings.tidalOAuth!);
 
         items.forEach((item: any) => {

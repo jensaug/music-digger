@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:tidal": "vitest run tests/test_tidal_oauth.test.ts",
-    "test:settings": "vitest run tests/test_settings.test.ts"
+    "test:settings": "vitest run tests/test_settings.test.ts",
+    "test:integration": "vitest run tests/test_tidal_api_pagination.test.ts --browser.headless --browser.name=chromium",
+    "test:integration": "vitest run tests/test_tidal_api_pagination.test.ts --browser.headless --browser.name=chromium"
   },
   "dependencies": {
     "lucide-react": "^0.562.0",
