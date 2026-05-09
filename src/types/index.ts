@@ -28,8 +28,25 @@ export interface Track {
 export interface UserSettings {
   lastfmUsername: string;
   lastfmApiKey: string;
-  tidalToken?: string;
-  tidalUserId?: string;
+  tidalOAuth?: TidalOAuthSettings;
+}
+
+export interface TidalOAuthSettings {
+  clientId: string;
+  clientSecret: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  userId?: string;
+}
+
+export interface TidalOAuthSettings {
+  clientId: string;
+  clientSecret: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  userId?: string;
 }
 
 export interface AnalysisResult {

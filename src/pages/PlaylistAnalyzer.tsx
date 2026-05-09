@@ -20,8 +20,12 @@ const PlaylistAnalyzer: React.FC = () => {
         try {
             const settings = getSettings();
 
-            if (!settings.tidalToken || !settings.tidalUserId) {
-                throw new Error("Please configure Tidal Token and User ID in Settings.");
+            if (!settings.tidalOAuth?.clientId || !settings.tidalOAuth?.clientSecret) {
+                throw new Error("Please configure Tidal OAuth in Settings.");
+            }
+
+            if (!settings.tidalOAuth.accessToken || !settings.tidalOAuth.refreshToken) {
+                throw new Error("Please connect to Tidal first in Settings.");
             }
 
             const results = await analyzePlaylists(settings);

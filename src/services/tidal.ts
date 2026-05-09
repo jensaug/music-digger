@@ -1,9 +1,14 @@
-// Tidal API is restricted and requires specific token handling.
-// This service acts as a placeholder or "bring your own token" implementation.
+import type { TidalOAuthSettings } from '../types';
 
 const BASE_URL = 'https://api.tidal.com/v1';
 
-export const fetchUserPlaylists = async (userId: string, token: string) => {
+const getAccessToken = (oauth: TidalOAuthSettings): string | undefined => {
+    return oauth.accessToken;
+};
+
+export const fetchUserPlaylists = async (oauth: TidalOAuthSettings) => {
+    const token = getAccessToken(oauth);
+    const userId = oauth.userId;
     if (!token || !userId) return [];
 
     try {
@@ -19,13 +24,13 @@ export const fetchUserPlaylists = async (userId: string, token: string) => {
         console.error("Tidal API Error", error);
         return [];
     }
-}
+};
 
-export const fetchPlaylistTracks = async (playlistId: string, token: string) => {
+export const fetchPlaylistTracks = async (playlistId: string, oauth: TidalOAuthSettings) => {
+    const token = getAccessToken(oauth);
     if (!token) return [];
 
     try {
-        // Limit to 50 tracks for now to avoid pagination complexity in this iteration
         const response = await fetch(`${BASE_URL}/playlists/${playlistId}/items?limit=50`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -37,22 +42,5 @@ export const fetchPlaylistTracks = async (playlistId: string, token: string) => 
     } catch (error) {
         console.error("Tidal API Error (Tracks)", error);
         return [];
-    }
-}
-
-export const fetchTidalUserId = async (token: string): Promise<string | null> => {
-    if (!token) return null;
-    try {
-        const response = await fetch(`${BASE_URL}/sessions`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        if (!response.ok) return null;
-        const data = await response.json();
-        return data.userId ? data.userId.toString() : null;
-    } catch (error) {
-        console.error("Failed to fetch Tidal User ID", error);
-        return null;
     }
 };
